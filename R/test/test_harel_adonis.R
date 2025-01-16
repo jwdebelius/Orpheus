@@ -19,7 +19,7 @@ setUp<- function(){
   self["fisher_var"] <- 0.11111111111111
   
   imputed <- fread(
-    paste0("../data", 
+    paste0("../../data", 
                  '/Example_imputed_dataset.tsv'),
     drop=1
   )
