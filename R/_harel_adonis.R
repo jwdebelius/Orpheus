@@ -1,5 +1,6 @@
 ## Pool Adonis-2 results using Fisher Z-transformation and Rubin's rules
-
+library(data.table)
+library(tidyverse)
 
 pool_adonis<- function(adonis, name_col='name', imput_col='imputation',var_order='var_order',model_level=NULL,
                        r2_col='r2', p_method='mean', df_col='df',p_col = 'pval',alpha = 0.05){
@@ -76,6 +77,8 @@ pool_adonis<- function(adonis, name_col='name', imput_col='imputation',var_order
       rename(model_level=.data[[model_level]]) %>%
       mutate(var_order= paste(var_order, model_level,sep="_"))
   }
+  
+  adonis <- data.table(adonis)
   
   num_obs <- get_num_obs(adonis)
   
