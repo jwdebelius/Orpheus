@@ -176,7 +176,12 @@ pool_adonis<- function(adonis, name_col='name', imput_col='imputation',var_order
   r2_summary_m<-r2_summary_m %>% select(name, var_order, dof_obs, dof_br, r2, r2_ci_lo, r2_ci_hi, p, fmi, rvi) %>%
     mutate(model = as.numeric(ifelse(str_detect(pattern = "_", var_order), str_split_i(pattern = "_",var_order,2), 1))) %>%
     arrange(model, var_order) %>%
-    as.data.frame()
+    data.table()
+  
+  ## if Lower CI > R^2, set LCI to 0 
+  r2_summary_m[r2_ci_lo>r2, r2_ci_lo:=0]
+  
+  r2_summary_m<-as.data.frame(r2_summary_m)
   
   return(r2_summary_m)
   
