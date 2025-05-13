@@ -1,0 +1,113 @@
+---
+title: "Test ALR code"
+author: "Meredith Palmore"
+date: "2025-04-30"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r, message=F}
+## Source functions
+
+source("C://Users/mpalmore1/OneDrive - Johns Hopkins/ECHO/Analysis_proposals/EC0413c/ALR/alr_from_deicode.R")
+```
+
+```{r, message=F}
+##Setup
+
+library(data.table)
+```
+
+**Create a test OTU presence dataset**
+
+```{r}
+test_otus<-data.frame("FeatureID" = c(paste0("A",1:6)),
+                      "Sample1" = c(1,0,0,0,0,0),
+                      "Sample2" = c(0,1,0,0,0,0),
+                      "Sample3" = c(0,0,1,0,0,0),
+                      "Sample4" = c(0,0,0,0,0,1))
+
+test_otus
+```
+
+**Create a dataset for PCA coordinates already in an ascending order.**
+
+This way I know feature A1, then A2, then A3 etc will count towards the numerator
+
+```{r}
+coords_test<- data.frame("FeatureID" = c(paste0("A",1:6)),
+                         "PC1"= c(-0.1, -0.01, 0.00,0.01, 0.1, 0.2))
+
+coords_test
+```
+
+**Compute ALRs samples.**
+
+Since each sample had just 1 OTU in the numerator and 1 in the denominator, all ALRs = 0.
+
+```{r}
+alr(features = test_otus, coords = coords_test, pc = "PC1")
+```
+
+**Create another test OTU presence data set, this time making samples have more features in the numerator.**
+
+```{r}
+test_otus2<-data.frame("FeatureID" = c(paste0("A",1:6)),
+                       "Sample1" = c(1,1,1,1,1,1),
+                       "Sample2" = c(0,1,1,1,1,1),
+                       "Sample3" = c(0,0,1,1,1,1),
+                       "Sample4" = c(0,0,0,0,0,1),
+                       "Sample5" = c(0,0,0,0,1,0),
+                       "Sample6" = c(0,0,0,1,1,0),
+                       "Sample7" = c(0,0,0,2,3,0))
+
+test_otus2
+
+coords_test
+```
+
+Sample1 ALR should be log2(6/2) = 1.584963
+
+Sample2 ALR should be log2(5/2) = 1.321928
+
+Sample3 ALR should be log2(4/2) = 1
+
+Sample4 ALR should be log2(1/1) = 0
+
+Sample5 ALR should be log2(1/1) = 0
+
+Sample6 ALR should be log2(2/1) = 1
+
+Sample7 ALR should be log2(5/3) = 0.7369656
+
+**Compute ALRs for each sample:**
+
+```{r}
+alr(features = test_otus2, coords = coords_test, pc = "PC1")
+
+```
+
+
+
+```{r}
+test_otus3<-data.frame("FeatureID" = c(paste0("A",1:6)),
+                       "Sample1" = c(2,3,5,3,7,1),
+                       "Sample2" = c(0,2,3,5,3,7),
+                       "Sample3" = c(0,0,2,3,5,1),
+                       "Sample4" = c(0,0,0,0,0,7),
+                       "Sample5" = c(0,0,0,0,3,0),
+                       "Sample6" = c(0,0,0,2,6,0),
+                       "Sample7" = c(0,0,0,6,7,0))
+
+test_otus3
+
+```
+
+```{r}
+alr(features = test_otus3, coords = coords_test, pc = "PC1", thresh = 1)
+```
+

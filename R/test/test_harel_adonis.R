@@ -71,7 +71,8 @@ test_pool_adonis<-function(self){
   ## are the first 7 digits the same?
   test_s<-sapply(test, compare_digits) # correct up to 7 significant figs?
   known_s<-sapply(as.data.frame(known), compare_digits) # correct up to 7 significant figs?
- 
+  
+  
   identical(known_s, test_s)
 }
 
