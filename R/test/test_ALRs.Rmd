@@ -50,7 +50,7 @@ coords_test
 Since each sample had just 1 OTU in the numerator and 1 in the denominator, all ALRs = 0.
 
 ```{r}
-alr(features = test_otus, coords = coords_test, pc = "PC1", thresh =0)
+alr(features = test_otus, coords = coords_test, pc = "PC1", thresh =1)
 ```
 
 **Create another test OTU presence data set, this time making samples have more features in the numerator.**
@@ -125,5 +125,31 @@ Modifying the proportion of samples the OTU must be present in:
 
 ```{r}
 alr(features = test_otus3, coords = coords_test, pc = "PC1", prop_samp = 0.7)
+```
+
+Testing the thresh flag (minimum number of observations of each feature)
+
+```{r}
+test_otus3
+```
+
+**If we set the threshold to 2, Samples 1 & 3 will change**
+
+Sample1 ALR should be log2((20+1)/(11+1)) =  0.8073549
+
+Sample2 ALR should be log2((13+1)/(15+1)) = -0.1926451
+
+Sample3 ALR should be log2((10+1)/(9+1)) = 0.1375035
+
+Sample4 ALR should be log2((7+1)/(7+1)) = 0.0000000
+
+Sample5 ALR should be log2((3+1)/(3+1)) = 0.0000000
+
+Sample6 ALR should be log2((8+1)/(8+1)) = 0.0000000
+
+Sample6 ALR should be log2((13+1)/(13+1)) = 0.0000000
+
+```{r}
+alr(features = test_otus3, coords = coords_test, pc = "PC1", thresh = 3)
 ```
 

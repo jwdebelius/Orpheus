@@ -398,8 +398,8 @@ coords_test</code></pre>
 <p><strong>Compute ALRs samples.</strong></p>
 <p>Since each sample had just 1 OTU in the numerator and 1 in the
 denominator, all ALRs = 0.</p>
-<pre class="r"><code>alr(features = test_otus, coords = coords_test, pc = &quot;PC1&quot;, thresh =0)</code></pre>
-<pre><code>## Warning in alr(features = test_otus, coords = coords_test, pc = &quot;PC1&quot;, thresh = 0): Features contributing to both the numerator and denominator:
+<pre class="r"><code>alr(features = test_otus, coords = coords_test, pc = &quot;PC1&quot;, thresh =1)</code></pre>
+<pre><code>## Warning in alr(features = test_otus, coords = coords_test, pc = &quot;PC1&quot;, thresh = 1): Features contributing to both the numerator and denominator:
 ## A1
 ## A2
 ## A3
@@ -478,6 +478,31 @@ alr(features = test_otus3, coords = coords_test, pc = &quot;PC1&quot;)</code></p
 <pre class="r"><code>alr(features = test_otus3, coords = coords_test, pc = &quot;PC1&quot;, prop_samp = 0.7)</code></pre>
 <pre><code>##    Sample1    Sample2    Sample3    Sample4    Sample5    Sample6    Sample7 
 ##  0.6374299  0.0000000 -0.2223924  3.0000000  2.0000000 -1.2223924 -0.1926451</code></pre>
+<p>Testing the thresh flag (minimum number of observations of each
+feature)</p>
+<pre class="r"><code>test_otus3</code></pre>
+<pre><code>##   FeatureID Sample1 Sample2 Sample3 Sample4 Sample5 Sample6 Sample7
+## 1        A1       2       0       0       0       0       0       0
+## 2        A2       3       2       0       0       0       0       0
+## 3        A3       5       3       2       0       0       0       0
+## 4        A4       3       5       3       7       3       2       6
+## 5        A5       7       3       5       0       0       6       7
+## 6        A6       1       7       1       0       0       0       0</code></pre>
+<p><strong>If we set the threshold to 2, Samples 1 &amp; 3 will
+change</strong></p>
+<p>Sample1 ALR should be log2((20+1)/(11+1)) = 0.8073549</p>
+<p>Sample2 ALR should be log2((13+1)/(15+1)) = -0.1926451</p>
+<p>Sample3 ALR should be log2((10+1)/(9+1)) = 0.1375035</p>
+<p>Sample4 ALR should be log2((7+1)/(7+1)) = 0.0000000</p>
+<p>Sample5 ALR should be log2((3+1)/(3+1)) = 0.0000000</p>
+<p>Sample6 ALR should be log2((8+1)/(8+1)) = 0.0000000</p>
+<p>Sample6 ALR should be log2((13+1)/(13+1)) = 0.0000000</p>
+<pre class="r"><code>alr(features = test_otus3, coords = coords_test, pc = &quot;PC1&quot;, thresh = 3)</code></pre>
+<pre><code>## Warning in alr(features = test_otus3, coords = coords_test, pc = &quot;PC1&quot;, : Features contributing to both the numerator and denominator:
+## A4
+## A5</code></pre>
+<pre><code>##    Sample1    Sample2    Sample3    Sample4    Sample5    Sample6    Sample7 
+##  0.8073549 -0.1926451  0.1375035  0.0000000  0.0000000  0.0000000  0.0000000</code></pre>
 
 
 

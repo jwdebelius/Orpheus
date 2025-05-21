@@ -49,13 +49,9 @@ sort_pc_desc<-function(coords, pc){
 # Convert to presence/absence 
 
 pres_abs<-function(features, thresh){
-  # = 1 if feature x>0
-  features_pa<-sapply(features[,-c(1)], function(x){ifelse(x>thresh, 1,0)})
-  
-  # re-add the features column
-  features_pa<-as.data.frame(cbind(features[,1], features_pa))
-  names(features_pa)[1]<-"FeatureID"
-  
+  # = 1 if feature is >=thresh
+  features_pa<-sapply(features[,-c(1)], function(x){ifelse(x>=thresh, 1,0)})
+
   return(features_pa)
 }
 
@@ -78,7 +74,7 @@ cummax_feat<-function(features, coords_sorted, prop_samp, thresh){
   # print(pres_abs_sort)
   
   # column-wise (Sample) cumulative max
-  cummax_feat_samp<-apply(pres_abs_sort[,-c(1)], 2, cummax)
+  cummax_feat_samp<-apply(pres_abs_sort, 2, cummax)
   
   # Take sample mean across features
   row_index<-which(apply(cummax_feat_samp,1, mean, na.rm = T)>=prop_samp) %>% min
@@ -92,16 +88,18 @@ cummax_feat<-function(features, coords_sorted, prop_samp, thresh){
 }
 
 
-alr<-function(features,coords, pc, featurcol="FeatureID", thresh=0, prop_samp=1){
+alr<-function(features,coords, pc, featurcol="FeatureID", thresh=1, prop_samp=1){
   # Main function, sourcing the others above
   
   # 'coords' is a df or tibble, rows are features, columns are PCs, first column should be the feature name
   # 'features' is a a df or tibble, rows are features, columns are samples, first column should be the feature name
   # 'pc' is the column name of the PC of interest
   # 'featurcol' is the column name of the Feature IDs in features and coordinates table
-  # 'thresh' is the minimum count of features required to be "present". Default is 0. 
+  # 'thresh' is the minimum number of features to be counted as "present". Default is 1. 
   # 'prop_samp' is the proportion of samples that must have a feature present for the feature to contribute to the numerator, ranging from 0 to 1. Default is 1 (all samples). 
   #  We assume at least two features in the numerator and denominator
+  
+  if(thresh<=0){stop("Thresold for number of features to be counted as 'present' must be >0.")}
   
   check_tables(features,coords, featurcol)
   
