@@ -60,7 +60,7 @@ pres_abs<-function(features, thresh){
 }
 
 
-cumsum_feat<-function(features, feature_pa, coords_sorted){
+cummax_feat<-function(features, coords_sorted, prop_samp, thresh){
   # features_pa is the presence-abscence table
   # coords_sorted is the coordinates sorted by PCs
   
@@ -68,19 +68,20 @@ cumsum_feat<-function(features, feature_pa, coords_sorted){
   order<-unlist(coords_sorted[,1])
   
   # arrange presence absence and features dataset by order in the sorted coordinates file
-  pres_abs_sort<-feature_pa %>%
-    dplyr::arrange(factor(FeatureID, 
-                          levels = order))
-  
   feat_sort<-features %>%
     dplyr::arrange(factor(FeatureID, 
                           levels = order))
   
-  # column-wise (Sample) cumulative sum
-  cumsum_feat_samp<-apply(pres_abs_sort[,-c(1)], 2, cumsum)
+  #convert to presence absence
+  pres_abs_sort<- pres_abs(features = feat_sort, thresh = thresh)
   
-  # Take min across row (samples)
-  row_index<-which(apply(cumsum_feat_samp,1, min)==1) %>% min
+  # print(pres_abs_sort)
+  
+  # column-wise (Sample) cumulative max
+  cummax_feat_samp<-apply(pres_abs_sort[,-c(1)], 2, cummax)
+  
+  # Take sample mean across features
+  row_index<-which(apply(cummax_feat_samp,1, mean, na.rm = T)>=prop_samp) %>% min
   
   # Take all of the rows up to (and including) where the first row’s minimum num 
   # of OTUs present equals 1
@@ -91,7 +92,7 @@ cumsum_feat<-function(features, feature_pa, coords_sorted){
 }
 
 
-alr<-function(features,coords, pc, featurcol="FeatureID", thresh=0){
+alr<-function(features,coords, pc, featurcol="FeatureID", thresh=0, prop_samp=1){
   # Main function, sourcing the others above
   
   # 'coords' is a df or tibble, rows are features, columns are PCs, first column should be the feature name
@@ -99,6 +100,7 @@ alr<-function(features,coords, pc, featurcol="FeatureID", thresh=0){
   # 'pc' is the column name of the PC of interest
   # 'featurcol' is the column name of the Feature IDs in features and coordinates table
   # 'thresh' is the minimum count of features required to be "present". Default is 0. 
+  # 'prop_samp' is the proportion of samples that must have a feature present for the feature to contribute to the numerator, ranging from 0 to 1. Default is 1 (all samples). 
   #  We assume at least two features in the numerator and denominator
   
   check_tables(features,coords, featurcol)
@@ -106,31 +108,34 @@ alr<-function(features,coords, pc, featurcol="FeatureID", thresh=0){
   coords_asc<-sort_pc_asc(coords, pc=pc)
   coords_desc<-sort_pc_desc(coords, pc=pc) 
   
-  # convert to presence/absence
-  
-  pres_abs_feat<-pres_abs(features, thresh)
   
   ## Ascending PC1 
-  asc_feats<-cumsum_feat(features = features, feature_pa = pres_abs_feat, coords_sorted = coords_asc)
+  asc_feats<-cummax_feat(features = features, coords_sorted = coords_asc, prop_samp = prop_samp, thresh = thresh)
   
   ## Descending PC1
-  desc_feats<-cumsum_feat(features = features, feature_pa = pres_abs_feat, coords_sorted = coords_desc)
+  desc_feats<-cummax_feat(features = features, coords_sorted = coords_desc, prop_samp = prop_samp, thresh = thresh)
+  
+  ## warning if features are in num AND denom 
+  mutual_features<-asc_feats[,featurcol][asc_feats[,featurcol]  %in% desc_feats[,featurcol]]
+  
+  if(length(mutual_features)!=0){
+    warning("Features contributing to both the numerator and denominator:\n",paste0(mutual_features,"\n"))
+  }
   
   # For each sample ; sum of PC1asc and PC1desc 
-  ## actual feature table to compute ALRs -- subset to selected ascsenidng and descending features
+  ## actual feature table to compute ALRs -- subset to selected ascending and descending features
   
   asc_feats_n<-sapply(asc_feats[,-c(1)], as.numeric)
   desc_feats_n<-sapply(desc_feats[,-c(1)], as.numeric)
   
   # Can assume is matrix because never going to have just one feature
-  # If matrix, (more than one OTU selected) take the column-wise sum (sum OTUs present per sample). Else, keep the vector
   
   sampsums_pc_a<-apply(asc_feats_n,2, sum)
 
-  sampsums_pc_d<-apply(desc_feats_n,2, sum)
+  sampsums_pc_d<-apply(desc_feats_n,2, sum) 
   
   # take the ratio of the sum of features along the PCs
-  ar<-(sampsums_pc_a/sampsums_pc_d)
+  ar<-(sampsums_pc_a + 1)/(sampsums_pc_d + 1) # add 1 as a buffer when the sum of features = 0
   
   # Log2 of the ratio
   log2alr<-log(ar,
@@ -138,5 +143,3 @@ alr<-function(features,coords, pc, featurcol="FeatureID", thresh=0){
   
   return(log2alr)
 }
-
-

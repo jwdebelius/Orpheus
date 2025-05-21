@@ -1,7 +1,7 @@
 ---
 title: "Test ALR code"
 author: "Meredith Palmore"
-date: "2025-04-30"
+date: "2025-05-21"
 output: html_document
 ---
 
@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r, message=F}
 ## Source functions
 
-source("C://Users/mpalmore1/OneDrive - Johns Hopkins/ECHO/Analysis_proposals/EC0413c/ALR/alr_from_deicode.R")
+source("C://Users/mpalmore1/OneDrive - Johns Hopkins/ECHO/Analysis_proposals/EC0413c/Orpheus/R/alr_from_deicode.R")
 ```
 
 ```{r, message=F}
@@ -50,7 +50,7 @@ coords_test
 Since each sample had just 1 OTU in the numerator and 1 in the denominator, all ALRs = 0.
 
 ```{r}
-alr(features = test_otus, coords = coords_test, pc = "PC1")
+alr(features = test_otus, coords = coords_test, pc = "PC1", thresh =0)
 ```
 
 **Create another test OTU presence data set, this time making samples have more features in the numerator.**
@@ -67,22 +67,22 @@ test_otus2<-data.frame("FeatureID" = c(paste0("A",1:6)),
 
 test_otus2
 
-coords_test
+# coords_test
 ```
 
-Sample1 ALR should be log2(6/2) = 1.584963
+Sample1 ALR should be log2((6+1)/(2+1)) = 1.2223924
 
-Sample2 ALR should be log2(5/2) = 1.321928
+Sample2 ALR should be log2((5 + 1)/(2 + 1)) = 1
 
-Sample3 ALR should be log2(4/2) = 1
+Sample3 ALR should be log2((4 + 1)/(2 + 1)) = 0.7369656
 
-Sample4 ALR should be log2(1/1) = 0
+Sample4 ALR should be log2((1 + 1)/(1 + 1)) = 0
 
-Sample5 ALR should be log2(1/1) = 0
+Sample5 ALR should be log2((1 + 1)/(1 + 1)) = 0
 
-Sample6 ALR should be log2(2/1) = 1
+Sample6 ALR should be log2((2 + 1)/(1 + 1)) = 0.5849625
 
-Sample7 ALR should be log2(5/3) = 0.7369656
+Sample7 ALR should be log2((5 + 1)/(3 + 1)) = 0.5849625
 
 **Compute ALRs for each sample:**
 
@@ -109,5 +109,21 @@ test_otus3
 
 ```{r}
 alr(features = test_otus3, coords = coords_test, pc = "PC1", thresh = 1)
+```
+
+Minimizing overlap between numerator and denominator:
+
+```{r}
+test_otus3$Sample4 <- c(0,0,0,7,0,0)
+test_otus3$Sample5 <- c(0,0,0,3,0,0)
+
+alr(features = test_otus3, coords = coords_test, pc = "PC1")
+
+```
+
+Modifying the proportion of samples the OTU must be present in:
+
+```{r}
+alr(features = test_otus3, coords = coords_test, pc = "PC1", prop_samp = 0.7)
 ```
 
