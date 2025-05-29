@@ -222,6 +222,11 @@ fisher_z<- function(adonis_nototal,  num_obs, r2_col){
   
   adonis_v<-num_obs %>% mutate(v = (1 / sqrt(n- 3))^2)
   
+  if("model_level" %in% names(adonis_q)){
+    adonis_v<-merge(adonis_q[,c("name","model_level","imputation")], adonis_v,
+                    by = c("model_level","imputation"), all.x = T, all.y = F, suffixes = c("",".y"))
+    adonis_v$name.y<-NULL
+  }
   
   q_v<-list()
   q_v[['q']]<-adonis_q
